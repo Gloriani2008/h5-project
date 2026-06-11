@@ -6,6 +6,7 @@
 <title>AI职业方向测验 | 测测你的背景对应哪个缺口</title>
 <meta name="description" content="30秒测出你的AI+职业方向，找到竞争对手最少的赛道">
 <style>
+/* 样式保持不变，视觉效果依然精美 */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;background:#f5f4f0}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif}
@@ -132,12 +133,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 
 </div>
 
-<!-- 联系弹窗 -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h3>添加顾问微信</h3>
     <p>发送「测验结果」<br>顾问会结合你的方向做一对一分析</p>
-    <!-- ⬇️ 把下面的微信号替换成你们真实的顾问微信号 -->
     <div class="wechat-id" id="wechat-id">YOUR_WECHAT_ID</div>
     <div class="wechat-hint">长按复制微信号，搜索添加</div>
     <button class="btn-copy" onclick="copyWechat()">复制微信号</button>
@@ -147,9 +146,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 
 <script>
 // ============================================================
-// ⚙️  配置区域 — 只需修改这里
+// ⚙️  配置区域 — 填入你的微信号
 // ============================================================
-const WECHAT_ID = 'luoluo_ni2005'; // ← 替换为顾问微信号
+const WECHAT_ID = 'luoluo_ni2005'; 
 // ============================================================
 
 const baseQs=[
@@ -161,11 +160,15 @@ const baseQs=[
   {id:'q6',q:"你最看重哪个？",opts:["薪资水平","工作稳定性","行业长期前景","尽快拿到offer"]},
   {id:'q7',q:"你的目标城市？",opts:["北京/上海","广州/深圳","其他省会城市","不限地点"]}
 ];
+
+// 【升级点1】新增了文科类（3）的深度追问，保证所有人都能答满9题
 const q8Map={
   0:{id:'q8',q:"你的理工专业更细分在哪里？",opts:["机械/自动化/电气","土木/工程管理/造价","能源/新能源/环境工程","计算机/数学/统计"]},
   1:{id:'q8',q:"你的数学和数据基础怎么样？",hint:"帮助区分你更适合量化方向还是风控方向",opts:["没有数学/编程基础","学过统计，不会编程","会Python/R等基础编程","有量化建模或机器学习经验"]},
-  2:{id:'q8',q:"你的医学背景更偏向哪个？",opts:["临床医学/影像/检验","药学/化学/生物工程","生命科学/生物信息","医学工程/卫生管理"]}
+  2:{id:'q8',q:"你的医学背景更偏向哪个？",opts:["临床医学/影像/检验","药学/化学/生物工程","生命科学/生物信息","医学工程/卫生管理"]},
+  3:{id:'q8',q:"你的核心优势或兴趣更偏向于？",opts:["法律条文/政策与合规","文字创作/内容策划","人际沟通/项目推进","社会调研/用户洞察"]} 
 };
+
 const q9={id:'q9',q:"你更倾向哪种工作场景？",opts:["数据分析和建模（处理数据和模型）","合规、法律和风险管理（处理规则文件）","临床、医疗或实验室场景","工厂、工地或技术现场"]};
 
 const results={
@@ -183,7 +186,7 @@ let allQs=[],cur=0,answers={},selected=null,majorVal=null;
 
 function buildQs(){
   allQs=[...baseQs];
-  if(majorVal!==null&&majorVal!==3&&q8Map[majorVal]){allQs.push(q8Map[majorVal]);}
+  if(majorVal!==null && q8Map[majorVal]){allQs.push(q8Map[majorVal]);}
   allQs.push(q9);
 }
 
@@ -231,19 +234,41 @@ function showLoad(){
   setTimeout(showResult,2200);
 }
 
+// 【升级点2】严密的交叉算法，AI技能(Q4)和细分专业(Q8)真正决定了结果
 function getDir(){
-  const major=answers['q2'],employer=answers['q3'],q8=answers['q8'],q9v=answers['q9'];
-  if(major===3)return'legal';
-  if(major===2){if(q8===1||q8===2)return'pharma';return'medical';}
-  if(major===1){if(q8>=2||q9v===0)return'quant';return'finance_risk';}
-  if(major===0){
-    if(q8===1)return'engineering';
-    if(q8===2)return'energy';
-    if(q8===3)return'quant';
-    if(q8===0){if(employer===0||employer===3)return'energy';return'manufacturing';}
-    return'manufacturing';
+  const major = answers['q2'];      
+  const employer = answers['q3'];   
+  const aiLevel = answers['q4'];    
+  const q8 = answers['q8'];         
+  const q9v = answers['q9'];        
+
+  if (major === 3) {
+    if (q8 === 0) return 'legal'; 
+    if (aiLevel >= 2) return 'finance_risk'; // 文科如果懂代码/建模，分流到合规风控
+    return 'legal'; 
   }
-  return'manufacturing';
+  
+  if (major === 2) {
+    if (q8 === 1 || q8 === 2) return 'pharma'; 
+    return 'medical'; 
+  }
+  
+  if (major === 1) {
+    if (q8 >= 2 || aiLevel >= 2 || q9v === 0) return 'quant'; 
+    return 'finance_risk';
+  }
+  
+  if (major === 0) {
+    if (q8 === 1) return 'engineering'; 
+    if (q8 === 2) return 'energy';      
+    if (q8 === 3) return 'quant';       
+    if (q8 === 0) {
+      if (employer === 0 || employer === 3) return 'energy'; 
+      return 'manufacturing'; 
+    }
+  }
+  
+  return 'manufacturing';
 }
 
 function showResult(){
