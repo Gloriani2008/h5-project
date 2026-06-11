@@ -6,7 +6,6 @@
 <title>AI职业方向测验 | 测测你的背景对应哪个缺口</title>
 <meta name="description" content="30秒测出你的AI+职业方向，找到竞争对手最少的赛道">
 <style>
-/* 样式保持不变，视觉效果依然精美 */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;background:#f5f4f0}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif}
@@ -34,6 +33,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 .dot{width:20px;height:20px;border-radius:50%;border:2px solid #d1d5db;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
 .opt.sel .dot{border-color:#7c3aed;background:#7c3aed}
 .opt.sel .dot::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+/* 多选题的方块样式 */
+.dot.square{border-radius:4px}
+.opt.sel .dot.square::after{border-radius:2px;width:10px;height:10px}
+
 .opt-txt{font-size:15px;color:#1a1a1a;line-height:1.4}
 .btn-next{width:100%;padding:15px;background:#7c3aed;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;transition:opacity .15s;font-family:inherit}
 .btn-next:disabled{opacity:.28;cursor:default}
@@ -88,8 +91,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
   <p>不是教你怎么找工作，而是告诉你一个你大概率不知道的赛道——你的背景在那里竞争对手极少。</p>
   <div class="hero-stats">
     <span>⏱ <b>约3分钟</b></span>
-    <span>📊 <b>9道</b>选择题</span>
-    <span>🎁 <b>8个</b>方向精准匹配</span>
+    <span>📊 <b>9道</b>精选测验</span>
+    <span>🎁 <b>深度</b>专属诊断</span>
   </div>
 </div>
 
@@ -107,7 +110,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 
 <div class="loading" id="load-sec">
   <div class="spinner"></div>
-  <p>正在根据你的背景<br>匹配最适合的方向...</p>
+  <p>正在深度分析您的选项...<br>资深AI顾问正在生成您的专属诊断...</p>
 </div>
 
 <div class="result" id="res-sec">
@@ -146,7 +149,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 
 <script>
 // ============================================================
-// ⚙️  配置区域 — 填入你的微信号
+// ⚙️ 填写你的微信号
 // ============================================================
 const WECHAT_ID = 'luoluo_ni2005'; 
 // ============================================================
@@ -156,12 +159,14 @@ const baseQs=[
   {id:'q2',q:"你的专业大类是？",hint:"这是最关键的一题，影响后续所有匹配",opts:["理工类（机械/电气/自动化/土木/材料/化工/环境）","商科/经管类（金融/经济/会计/管理）","医学/生命科学（临床/影像/药学/生物）","法律/社会科学/文科"]},
   {id:'q3',q:"你更倾向哪类雇主？",opts:["央国企/国有单位","头部民企/互联网大厂","外资企业","新能源/硬科技企业","还没想好"]},
   {id:'q4',q:"你目前用过哪些AI工具？",opts:["几乎没用过","用过ChatGPT、文心一言等","会写基础Python代码","有机器学习或建模经验"]},
-  {id:'q5',q:"求职时你最大的困惑？",opts:["不知道往哪个方向走","知道方向但不知道怎么准备","简历投了没有回音","面试通过率低","担心专业不对口"]},
+  
+  // Q5 变成多选题，优化了痛点描述
+  {id:'q5',q:"求职时你最大的困惑？（可多选）", type:'multi', opts:["不知道往哪个方向走（赛道太多）","知道方向但缺对口实习/项目","简历投递石沉大海/面试经常挂","担心专业不对口/跨行没底气"]},
+  
   {id:'q6',q:"你最看重哪个？",opts:["薪资水平","工作稳定性","行业长期前景","尽快拿到offer"]},
   {id:'q7',q:"你的目标城市？",opts:["北京/上海","广州/深圳","其他省会城市","不限地点"]}
 ];
 
-// 【升级点1】新增了文科类（3）的深度追问，保证所有人都能答满9题
 const q8Map={
   0:{id:'q8',q:"你的理工专业更细分在哪里？",opts:["机械/自动化/电气","土木/工程管理/造价","能源/新能源/环境工程","计算机/数学/统计"]},
   1:{id:'q8',q:"你的数学和数据基础怎么样？",hint:"帮助区分你更适合量化方向还是风控方向",opts:["没有数学/编程基础","学过统计，不会编程","会Python/R等基础编程","有量化建模或机器学习经验"]},
@@ -169,22 +174,23 @@ const q8Map={
   3:{id:'q8',q:"你的核心优势或兴趣更偏向于？",opts:["法律条文/政策与合规","文字创作/内容策划","人际沟通/项目推进","社会调研/用户洞察"]} 
 };
 
-const q9={id:'q9',q:"你更倾向哪种工作场景？",opts:["数据分析和建模（处理数据和模型）","合规、法律和风险管理（处理规则文件）","临床、医疗或实验室场景","工厂、工地或技术现场"]};
+// 全新 Q9：工作模式评估
+const q9={id:'q9',q:"在日常工作中，你更倾向于哪种价值产出模式？", hint:"这决定了你更适合研究岗、业务岗还是支持岗", opts:["偏向独立钻研（沉浸处理数据/推导逻辑）","偏向沟通协作（跨部门推进/做“翻译官”）","偏向商业前端（直面客户/负责业务变现）","偏向规则标准（梳理流程/合规与质控）"]};
 
 const results={
   finance_risk:{
     title:"AI + 金融风控 / 合规",
     hook:"银行和券商有个坑填了好几年：他们要找一个人，既懂监管合规逻辑，又能用AI模型做风险预测。懂合规的不会建模，会建模的不懂监管——这个坑，到现在还在。",
-    fit:"你的<b>商科/法律背景</b>是这个方向最稀缺的资产。市场上多数人只有两样里的一样。你已经有行业那一半了，这是四年读出来的，AI工具应用是可以补上的。",
-    jobs_pg:[{n:"AI风控建模分析师",t:"银行/券商"},{n:"智能合规专家",t:"监管科技方向"},{n:"信用模型算法工程师",t:"金融科技"}],
+    fit:"你的<b>商科/法律背景</b>是这个方向最稀缺的资产。市场上多数人只有两样里的一样。你已经有行业那一半了，AI工具应用是可以补上的。",
+    jobs_pg:[{n:"AI风控建模分析师",t:"银行/券商"},{n:"智能合规专家",t:"监管科技"},{n:"信用模型算法工程师",t:"金融科技"}],
     jobs_ug:[{n:"风控数据运营专员",t:"消费金融/银行"},{n:"合规审查助理(AI辅助)",t:"持牌机构"},{n:"金融产品运营",t:"科技大厂"}],
-    teaser:"<b>但不同细分方向对背景要求差异很大。</b>你的专业如何包装才能命中这类岗位的JD关键词，需要顾问结合你的具体情况来判断。"
+    teaser:"<b>但不同细分方向对背景要求差异很大。</b>你的专业如何包装才能命中这类岗位的JD关键词，需要顾问结合具体情况判断。"
   },
   quant:{
     title:"AI + 金融量化 / 智能投研",
     hook:"量化赛道的薪资天花板是金融行业里最高的——但它需要你同时懂数据处理和金融逻辑。纯技术的人不懂金融场景，纯金融的人处理不了海量数据，这个组合市场上真的很少。",
     fit:"你的背景里有<b>数据分析/理工科的底子</b>。金融场景的理解是可以快速学的，但对数字的敏感度不是三个月能培养的。你已经有核心优势了。",
-    jobs_pg:[{n:"量化策略研究员",t:"私募/公募基金"},{n:"AI核心算法分析师",t:"券商自营部门"},{n:"智能投研产品经理",t:"金融科技企业"}],
+    jobs_pg:[{n:"量化策略研究员",t:"私募/公募基金"},{n:"AI核心算法分析师",t:"券商自营"},{n:"智能投研产品经理",t:"金融科技"}],
     jobs_ug:[{n:"量化开发助理",t:"私募机构"},{n:"金融数据清洗专员",t:"券商/基金"},{n:"投研支持专员",t:"金融科技"}],
     teaser:"<b>但量化方向门槛高，入口很窄。</b>哪家机构的校招对你最可及，需要顾问帮你做一次真实评估，而不是凭感觉投。"
   },
@@ -192,53 +198,54 @@ const results={
     title:"AI + 智能制造 / 工业视觉",
     hook:"制造业正在把传统工程师岗位升级成AI系统操作岗。同样的企业，会AI应用的工程师和不会的，薪资和发展空间差距极大。大多数工科学生还没意识到这个变化。",
     fit:"你的<b>理工科工程背景</b>是纯AI毕业生永远没有的。他们不懂生产工艺流程；你懂工艺，加上AI工具应用，就是制造企业最想要的组合。这不是转行，是升维。",
-    jobs_pg:[{n:"AI视觉算法工程师",t:"头部制造企业"},{n:"工业大模型研究员",t:"智能工厂方向"},{n:"高级自动化架构师",t:"设备企业"}],
+    jobs_pg:[{n:"AI视觉算法工程师",t:"头部制造企业"},{n:"工业大模型研究员",t:"智能工厂"},{n:"高级自动化架构师",t:"设备企业"}],
     jobs_ug:[{n:"AI视觉测试工程师",t:"制造企业"},{n:"智能设备实施/运维",t:"自动化方向"},{n:"生产数据分析助理",t:"工厂数字化部"}],
-    teaser:"<b>但机械、自动化、电气——不同专业对应的目标企业差异不小。</b>哪家制造企业现在缺口最真实、招聘门槛最匹配你的背景，需要顾问帮你对上号。"
+    teaser:"<b>但不同专业对应的目标企业差异不小。</b>哪家制造企业现在缺口最真实、招聘门槛最匹配你的背景，需要顾问帮你对上号。"
   },
   engineering:{
     title:"AI + 工程造价 / 智能建造",
     hook:"建筑业是中国体量最大的传统行业之一，数字化改造刚刚开始。传统造价师和工程师完全不具备AI能力，央国企在招这类人，但市场上几乎找不到。",
-    fit:"你的<b>工程管理/造价/土木背景</b>是进入这个方向的门票——这类岗位本质上还是工程岗，只是需要多一层AI工具应用能力。行业知识才是护城河。",
-    jobs_pg:[{n:"AI造价算法分析师",t:"建筑/地产央国企"},{n:"BIM+AI研发工程师",t:"智能建造方向"},{n:"工程数字化架构师",t:"大型建设单位"}],
-    jobs_ug:[{n:"BIM助理工程师",t:"建筑央国企"},{n:"工程数据协调员",t:"数字化建设方向"},{n:"智能建造运营专员",t:"总包单位"}],
-    teaser:"<b>但央国企建筑单位和民企，招聘逻辑和薪资结构差很多。</b>你的背景更适合哪条线，如何在简历里体现出AI应用能力，需要顾问帮你做针对性包装。"
+    fit:"你的<b>工程/造价/土木背景</b>是进入这个方向的门票——这类岗位本质上还是工程岗，只是需要多一层AI工具应用能力。行业知识才是护城河。",
+    jobs_pg:[{n:"AI造价算法分析师",t:"建筑/地产央国企"},{n:"BIM+AI研发工程师",t:"智能建造"},{n:"工程数字化架构师",t:"大型建设单位"}],
+    jobs_ug:[{n:"BIM助理工程师",t:"建筑央国企"},{n:"工程数据协调员",t:"数字化建设"},{n:"智能建造运营专员",t:"总包单位"}],
+    teaser:"<b>但央国企和民企，招聘逻辑和薪资结构差很多。</b>你的背景更适合哪条线，需要在简历里针对性包装。"
   },
   energy:{
     title:"AI + 新能源 / 储能",
     hook:"光伏、储能、风电行业的确定性很高。但懂电力系统运作、又能用AI做预测优化的工程师，央国企和新能源民企抢了很久，还没抢够。",
     fit:"你的<b>电气/能源/工程背景</b>在这个方向是天然护城河。新能源企业最头疼的不是找不到AI工程师，而是AI工程师不懂行业。窗口期内AI应用是可以补上的。",
-    jobs_pg:[{n:"储能AI算法工程师",t:"头部新能源企业"},{n:"电网智能预测分析师",t:"央国企新能源"},{n:"新能源系统架构师",t:"高新企业"}],
+    jobs_pg:[{n:"储能AI算法工程师",t:"新能源大厂"},{n:"电网智能预测分析师",t:"央国企"},{n:"新能源系统架构师",t:"高新企业"}],
     jobs_ug:[{n:"智能系统运维技术员",t:"新能源企业"},{n:"光伏数据分析助理",t:"运维方向"},{n:"电站智能化实施专员",t:"工程方向"}],
-    teaser:"<b>但光伏、储能、风电、电网——四个方向的招聘节奏完全不同。</b>你的专业背景从哪个入口切进去成功率最高，需要顾问结合你的具体情况来分析。"
+    teaser:"<b>但光伏、储能、风电、电网——四个方向的招聘节奏完全不同。</b>你的专业背景从哪个入口切进去成功率最高，需要顾问帮你分析。"
   },
   medical:{
     title:"AI + 医疗影像 / 医学AI",
     hook:"医学背景有一道AI工程师跨不过去的门：临床逻辑和医学诊断思维。医疗科技企业见到一个既懂临床、又能理解AI诊断系统的候选人，基本上见一个要一个。",
-    fit:"你的<b>医学/生科背景</b>在这个方向是最高的护城河。AI工程师学不来你的临床语言。这意味着你站在一个纯技术背景的人进不来的赛道里，竞争对手天然就少。",
+    fit:"你的<b>医学/生科背景</b>在这个方向是最高的护城河。意味着你站在一个纯技术背景的人进不来的赛道里，竞争对手天然就少。",
     jobs_pg:[{n:"医疗大模型产品经理",t:"医疗器械企业"},{n:"医学影像AI算法岗",t:"头部医企"},{n:"临床AI高级咨询顾问",t:"互联网医疗"}],
     jobs_ug:[{n:"AI医疗产品运营",t:"互联网医疗"},{n:"医学数据标注统筹",t:"医疗AI公司"},{n:"临床试验数据助理",t:"医药企业"}],
-    teaser:"<b>但医疗器械、互联网医疗、医院信息科——三个方向的入口差异很大。</b>你的学历背景更适合从哪个口子切入，需要顾问帮你做一次真实的方向评估。"
+    teaser:"<b>但医疗器械、互联网医疗、医院信息科差异很大。</b>你的学历背景更适合从哪个口子切入，需要顾问帮你做真实评估。"
   },
   pharma:{
     title:"AI + 医药研发 / 生物信息",
     hook:"药企和CRO公司的AI化正在加快——AI辅助药物筛选、临床试验数据处理，这些岗位需要你同时懂实验逻辑和数据工具。两样都有的人，市场上极少。",
-    fit:"你的<b>药学/生物/化学背景</b>是进入这个赛道最难复制的部分。AI工程师学不来你对实验流程和生物机制的理解。这个组合，正是药企AI团队最想要的。",
+    fit:"你的<b>药学/生物/化学背景</b>是进入这个赛道最难复制的部分。AI工程师学不来你对实验流程和机制的理解。这个组合正是药企AI团队最想要的。",
     jobs_pg:[{n:"AI药物发现研究员",t:"大型药企/Biotech"},{n:"高级生物信息工程师",t:"CRO/基因公司"},{n:"生信算法专家",t:"医药研究机构"}],
     jobs_ug:[{n:"临床数据处理专员",t:"CRO机构"},{n:"实验室自动化技术员",t:"研发机构"},{n:"医药研发辅助运营",t:"药企"}],
     teaser:"<b>但药企、CRO、基因公司——不同机构对背景要求差异很大。</b>你的具体专业对应哪类机构的岗位，需要在简历上做精准优化。"
   },
   legal:{
     title:"AI + 法律合规 / 法律科技",
-    hook:"律所和大型企业的法务AI转型比你想象的快得多——能用AI工具处理合同审查、合规分析的法律人才，招聘需求激增。但法律加AI的组合，市场上几乎找不到人。",
-    fit:"你的<b>法律/文社科背景</b>是这个方向最难替代的资产。判断法律风险、理解合规边界需要专业训练。你已经有了别人没有的东西，加上AI工具应用，就是极度稀缺的人才。",
+    hook:"律所和大型企业的法务AI转型比想象的快得多——能用AI工具处理合同审查、合规分析的法律人才，招聘需求激增。但法律加AI的组合，市场上几乎找不到人。",
+    fit:"你的<b>法律/文社科背景</b>是这个方向最难替代的资产。判断风险、理解合规边界需要专业训练。加上AI工具应用，就是极度稀缺的人才。",
     jobs_pg:[{n:"法律AI产品经理",t:"法律科技公司"},{n:"智能合规高级顾问",t:"金融/科技大厂"},{n:"法律知识图谱工程师",t:"顶尖律所"}],
     jobs_ug:[{n:"智能合同审核助理",t:"企业法务部"},{n:"法律科技产品运营",t:"法律AI公司"},{n:"基础合规数据专员",t:"咨询/律所"}],
-    teaser:"<b>但律所、企业法务、法律AI公司——三个方向的发展路径差异非常大。</b>哪个入口对你现阶段最可及，需要顾问帮你做一对一分析。"
+    teaser:"<b>但律所、企业法务、法律AI公司——发展路径差异非常大。</b>哪个入口对你现阶段最可及，需要顾问帮你做一对一分析。"
   }
 };
 
 let allQs=[],cur=0,answers={},selected=null,majorVal=null;
+let curMultiSel=[]; // 用于存储多选题的当前选择
 
 function buildQs(){
   allQs=[...baseQs];
@@ -252,55 +259,82 @@ function render(){
   document.getElementById('prog-txt').textContent=`${cur+1} / ${total}`;
   document.getElementById('q-num').textContent=`问题 ${cur+1}`;
   document.getElementById('q-text').textContent=q.q;
+  
   const hint=document.getElementById('q-hint');
   if(q.hint){hint.textContent=q.hint;hint.style.display='block';}
   else{hint.style.display='none';}
+  
   const wrap=document.getElementById('opts-wrap');
   wrap.innerHTML='';
+  
+  if(q.type==='multi'){
+    curMultiSel = answers[q.id] || [];
+    document.getElementById('btn-next').disabled = (curMultiSel.length===0);
+  } else {
+    selected = answers[q.id] !== undefined ? answers[q.id] : null;
+    document.getElementById('btn-next').disabled = (selected===null);
+  }
+
   q.opts.forEach((o,i)=>{
     const d=document.createElement('div');
     d.className='opt';
-    d.innerHTML=`<div class="dot"></div><div class="opt-txt">${o}</div>`;
-    d.onclick=()=>sel(i,d);
+    
+    // 如果是多选题，使用 square 样式的小方块
+    const dotClass = q.type==='multi' ? 'dot square' : 'dot';
+    d.innerHTML=`<div class="${dotClass}"></div><div class="opt-txt">${o}</div>`;
+    
+    if(q.type==='multi'){
+      if(curMultiSel.includes(i)) d.classList.add('sel');
+      d.onclick=()=>toggleMulti(i,d);
+    } else {
+      if(selected===i) d.classList.add('sel');
+      d.onclick=()=>sel(i,d);
+    }
     wrap.appendChild(d);
   });
-  document.getElementById('btn-next').disabled=true;
-  selected=null;
-  document.getElementById('btn-next').textContent=cur===allQs.length-1?'查看我的方向 →':'下一题 →';
+  
+  document.getElementById('btn-next').textContent=cur===allQs.length-1?'匹配专属分析 →':'下一题 →';
+}
+
+function toggleMulti(i, el){
+  const idx = curMultiSel.indexOf(i);
+  if(idx > -1){
+    curMultiSel.splice(idx, 1);
+    el.classList.remove('sel');
+  } else {
+    curMultiSel.push(i);
+    el.classList.add('sel');
+  }
+  answers[allQs[cur].id] = [...curMultiSel];
+  document.getElementById('btn-next').disabled = (curMultiSel.length===0);
 }
 
 function sel(i,el){
   document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');selected=i;
+  el.classList.add('sel');
+  selected=i;
+  answers[allQs[cur].id] = selected;
   document.getElementById('btn-next').disabled=false;
 }
 
 function nextQ(){
-  if(selected===null)return;
   const q=allQs[cur];
-  answers[q.id]=selected;
-  if(q.id==='q2'){majorVal=selected;buildQs();}
+  if(q.id==='q2'){majorVal=answers['q2'];buildQs();}
   if(cur<allQs.length-1){cur++;render();}
-  else showLoad();
+  else showResult(); // 直接触发带有 AI 逻辑的 showResult
 }
 
-function showLoad(){
-  document.getElementById('quiz-sec').style.display='none';
-  document.getElementById('load-sec').style.display='block';
-  setTimeout(showResult,2200);
-}
-
-// 【升级点2】严密的交叉算法，AI技能(Q4)和细分专业(Q8)真正决定了结果
+// 严密交叉算法 (更新适配新版 Q9)
 function getDir(){
   const major = answers['q2'];      
   const employer = answers['q3'];   
   const aiLevel = answers['q4'];    
   const q8 = answers['q8'];         
-  const q9v = answers['q9'];        
+  const q9v = answers['q9']; // 0:钻研, 1:沟通, 2:前端, 3:规则 
 
   if (major === 3) {
-    if (q8 === 0) return 'legal'; 
-    if (aiLevel >= 2) return 'finance_risk'; // 文科如果懂代码/建模，分流到合规风控
+    if (q8 === 0 || q9v === 3) return 'legal'; 
+    if (aiLevel >= 2) return 'finance_risk'; 
     return 'legal'; 
   }
   
@@ -317,35 +351,35 @@ function getDir(){
   if (major === 0) {
     if (q8 === 1) return 'engineering'; 
     if (q8 === 2) return 'energy';      
-    if (q8 === 3) return 'quant';       
+    if (q8 === 3 || q9v === 0) return 'quant';       
     if (q8 === 0) {
       if (employer === 0 || employer === 3) return 'energy'; 
       return 'manufacturing'; 
     }
   }
-  
   return 'manufacturing';
 }
 
-// 升级版 showResult，包含调用 LLM 的逻辑
+// 带有后端 API 请求逻辑的 showResult
 async function showResult(){
   document.getElementById('quiz-sec').style.display='none';
-  // 显示加载动画，并修改提示词
   document.getElementById('load-sec').style.display='block';
-  document.querySelector('.loading p').innerHTML = '正在深度分析您的选项...<br>资深AI顾问正在生成您的专属诊断...';
 
-  // 1. 获取基础匹配结果
   const dirKey = getDir();
   const r = results[dirKey];
   const isUndergrad = (answers['q1'] === 0);
 
-  // 2. 将数字答案翻译成文字，准备发给大模型
+  // 解析多选题答案拼接为字符串
+  const q5AnswersArray = answers['q5'] || [];
+  const q5String = q5AnswersArray.map(idx => baseQs[4].opts[idx]).join('、');
+
+  // 构建传给后端的 User Profile
   const userProfile = {
     stage: baseQs[0].opts[answers['q1']],
     major: baseQs[1].opts[answers['q2']],
     employer: baseQs[2].opts[answers['q3']],
     aiLevel: baseQs[3].opts[answers['q4']],
-    painPoint: baseQs[4].opts[answers['q5']],
+    painPoint: q5String,
     goal: baseQs[5].opts[answers['q6']],
     city: baseQs[6].opts[answers['q7']],
     subMajor: answers['q8'] !== undefined ? q8Map[answers['q2']].opts[answers['q8']] : "通用方向",
@@ -353,7 +387,6 @@ async function showResult(){
   };
 
   try {
-    // 3. 向我们刚才写的 Vercel API 发送请求
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -362,18 +395,18 @@ async function showResult(){
     
     const data = await response.json();
     
-    // 4. 将 AI 生成的专属点评插入到页面中 (替换原来的 hook 部分)
     if(data.result) {
-      // 把 AI 生成的文本按段落转换成 HTML
       const formattedAiText = data.result.split('\n').filter(p => p.trim() !== '').map(p => `<p style="margin-bottom:8px;">${p}</p>`).join('');
       document.getElementById('res-hook').innerHTML = formattedAiText;
+    } else {
+      document.getElementById('res-hook').innerHTML = r.hook;
     }
   } catch (error) {
     console.error("AI 生成失败，使用默认文案", error);
-    document.getElementById('res-hook').textContent = r.hook; // 降级处理，如果 API 失败就用预设的话术
+    document.getElementById('res-hook').innerHTML = r.hook; 
   }
 
-  // 5. 渲染页面其他部分（职位列表等）
+  // 渲染页面信息
   document.getElementById('load-sec').style.display='none';
   document.getElementById('res-title').textContent = r.title;
   document.getElementById('res-fit').innerHTML = r.fit;
@@ -383,10 +416,9 @@ async function showResult(){
   
   let finalTeaser = r.teaser;
   if(isUndergrad) {
-    finalTeaser = "<p style='color:#7c3aed; font-size:13px; margin-bottom:12px; padding:10px; background:#f5f0ff; border-radius:8px;'><b>💡 本科生直接就业提示：</b><br>核心算法岗普遍卡硕士学历，但你可以通过上述<b>应用型/运营类/测试类</b>的基础岗位直接切入赛道，先上车积累行业实战经验，避开学历内卷。</p>" + finalTeaser;
+    finalTeaser = "<p style='color:#7c3aed; font-size:13px; margin-bottom:12px; padding:10px; background:#f5f0ff; border-radius:8px;'><b>💡 本科生直接就业提示：</b><br>核心算法岗普遍卡硕士学历，但你可以通过上述<b>应用型/运营类/测试类</b>的基础岗位直接切入赛道，积累行业实战经验，避开学历内卷。</p>" + finalTeaser;
   }
   document.getElementById('res-teaser').innerHTML=finalTeaser;
-  
   document.getElementById('res-sec').style.display='block';
 }
 
@@ -408,7 +440,7 @@ function copyWechat(){
 }
 
 function restart(){
-  cur=0;answers={};selected=null;majorVal=null;allQs=[];
+  cur=0;answers={};selected=null;majorVal=null;curMultiSel=[];
   document.getElementById('res-sec').style.display='none';
   document.getElementById('quiz-sec').style.display='block';
   buildQs();render();
