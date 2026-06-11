@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>AI职业方向测验 | 测测你的背景对应哪个缺口</title>
 <meta name="description" content="30秒测出你的AI+职业方向，找到竞争对手最少的赛道">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;background:#f5f4f0}
@@ -67,7 +67,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 .cta-box{margin:22px 20px 0;background:linear-gradient(135deg,#0f0225,#3b0f6e 70%,#5b21b6);border-radius:16px;padding:24px;text-align:center}
 .cta-box h3{color:#fff;font-size:17px;font-weight:700;margin-bottom:8px;line-height:1.45}
 .cta-box p{color:rgba(255,255,255,0.65);font-size:13px;line-height:1.75;margin-bottom:20px}
-.btn-cta{width:100%;padding:15px;background:#fff;color:#7c3aed;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
+.btn-cta{width:100%;padding:15px;background:#fff;color:#7c3aed;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:12px}
 .btn-cta:hover{opacity:.92}
 .btn-restart{display:block;margin:14px auto 0;background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:inherit}
 
@@ -133,25 +133,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
   <div class="cta-box">
     <h3>测验只是起点<br>你的具体情况需要一对一来分析</h3>
     <button class="btn-cta" onclick="showContact()">🔓 获取完整破冰话术</button>
-    <button class="btn-cta" onclick="generatePoster()" style="background:rgba(255,255,255,0.2); color:#fff; margin-top:12px;">📸 生成专属分析卡片</button>
+    <button class="btn-cta" onclick="generatePoster()" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3);">📸 生成专属分析卡片</button>
     <button class="btn-restart" onclick="restart()">重新测验</button>
   </div>
 </div>
 
-<div class="modal-overlay" id="poster-modal">
-  <div class="modal" style="padding:16px; background:transparent;">
-    <p style="color:#fff; font-weight:bold; margin-bottom:12px; text-shadow:0 2px 4px rgba(0,0,0,0.5);">👇 长按下方图片保存到手机</p>
-    <img id="generated-img" src="" style="width:100%; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.3); margin-bottom:16px;">
-    <button class="btn-close" style="color:#fff; background:rgba(0,0,0,0.5); padding:10px 20px; border-radius:20px;" onclick="closePosterModal()">关闭</button>
-  </div>
-</div>
 </div>
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h3>添加顾问领取深度分析</h3>
     <p>由于近期咨询量较大，请直接发送下方话术<br>顾问会优先为你进行一对一拆解</p>
-    
     <div class="wechat-id" id="wechat-id">YOUR_WECHAT_ID</div>
     <div class="wechat-hint">👆 第一步：长按上方复制微信号，去微信搜索</div>
     
@@ -159,6 +151,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
     
     <button class="btn-copy" onclick="copyAutoMsg()">👇 第二步：一键复制咨询话术</button>
     <button class="btn-close" onclick="closeModal()">关闭</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="poster-modal">
+  <div class="modal" style="padding:16px; background:transparent; max-width:400px; width:95%;">
+    <p style="color:#fff; font-weight:bold; margin-bottom:12px; text-shadow:0 2px 4px rgba(0,0,0,0.5);">👇 长按下方图片保存到手机</p>
+    <img id="generated-img" src="" style="width:100%; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.3); margin-bottom:16px; display:block;">
+    <button class="btn-close" style="color:#fff; background:rgba(0,0,0,0.5); padding:10px 20px; border-radius:20px;" onclick="closePosterModal()">关闭</button>
   </div>
 </div>
 
@@ -174,10 +174,7 @@ const baseQs=[
   {id:'q2',q:"你的专业大类是？",hint:"这是最关键的一题，影响后续所有匹配",opts:["理工类（机械/电气/自动化/土木/材料/化工/环境）","商科/经管类（金融/经济/会计/管理）","医学/生命科学（临床/影像/药学/生物）","法律/社会科学/文科"]},
   {id:'q3',q:"你更倾向哪类雇主？",opts:["央国企/国有单位","头部民企/互联网大厂","外资企业","新能源/硬科技企业","还没想好"]},
   {id:'q4',q:"你目前用过哪些AI工具？",opts:["几乎没用过","用过ChatGPT、文心一言等","会写基础Python代码","有机器学习或建模经验"]},
-  
-  // Q5 变成多选题，优化了痛点描述
   {id:'q5',q:"求职时你最大的困惑？（可多选）", type:'multi', opts:["不知道往哪个方向走（赛道太多）","知道方向但缺对口实习/项目","简历投递石沉大海/面试经常挂","担心专业不对口/跨行没底气"]},
-  
   {id:'q6',q:"你最看重哪个？",opts:["薪资水平","工作稳定性","行业长期前景","尽快拿到offer"]},
   {id:'q7',q:"你的目标城市？",opts:["北京/上海","广州/深圳","其他省会城市","不限地点"]}
 ];
@@ -189,7 +186,6 @@ const q8Map={
   3:{id:'q8',q:"你的核心优势或兴趣更偏向于？",opts:["法律条文/政策与合规","文字创作/内容策划","人际沟通/项目推进","社会调研/用户洞察"]} 
 };
 
-// 全新 Q9：工作模式评估
 const q9={id:'q9',q:"在日常工作中，你更倾向于哪种价值产出模式？", hint:"这决定了你更适合研究岗、业务岗还是支持岗", opts:["偏向独立钻研（沉浸处理数据/推导逻辑）","偏向沟通协作（跨部门推进/做“翻译官”）","偏向商业前端（直面客户/负责业务变现）","偏向规则标准（梳理流程/合规与质控）"]};
 
 const results={
@@ -260,7 +256,7 @@ const results={
 };
 
 let allQs=[],cur=0,answers={},selected=null,majorVal=null;
-let curMultiSel=[]; // 用于存储多选题的当前选择
+let curMultiSel=[];
 
 function buildQs(){
   allQs=[...baseQs];
@@ -293,8 +289,6 @@ function render(){
   q.opts.forEach((o,i)=>{
     const d=document.createElement('div');
     d.className='opt';
-    
-    // 如果是多选题，使用 square 样式的小方块
     const dotClass = q.type==='multi' ? 'dot square' : 'dot';
     d.innerHTML=`<div class="${dotClass}"></div><div class="opt-txt">${o}</div>`;
     
@@ -336,16 +330,15 @@ function nextQ(){
   const q=allQs[cur];
   if(q.id==='q2'){majorVal=answers['q2'];buildQs();}
   if(cur<allQs.length-1){cur++;render();}
-  else showResult(); // 直接触发带有 AI 逻辑的 showResult
+  else showResult(); 
 }
 
-// 严密交叉算法 (更新适配新版 Q9)
 function getDir(){
   const major = answers['q2'];      
   const employer = answers['q3'];   
   const aiLevel = answers['q4'];    
   const q8 = answers['q8'];         
-  const q9v = answers['q9']; // 0:钻研, 1:沟通, 2:前端, 3:规则 
+  const q9v = answers['q9']; 
 
   if (major === 3) {
     if (q8 === 0 || q9v === 3) return 'legal'; 
@@ -375,7 +368,6 @@ function getDir(){
   return 'manufacturing';
 }
 
-// 带有后端 API 请求逻辑的 showResult
 async function showResult(){
   document.getElementById('quiz-sec').style.display='none';
   document.getElementById('load-sec').style.display='block';
@@ -384,11 +376,9 @@ async function showResult(){
   const r = results[dirKey];
   const isUndergrad = (answers['q1'] === 0);
 
-  // 解析多选题答案拼接为字符串
   const q5AnswersArray = answers['q5'] || [];
   const q5String = q5AnswersArray.map(idx => baseQs[4].opts[idx]).join('、');
 
-  // 构建传给后端的 User Profile
   const userProfile = {
     stage: baseQs[0].opts[answers['q1']],
     major: baseQs[1].opts[answers['q2']],
@@ -417,11 +407,10 @@ async function showResult(){
       document.getElementById('res-hook').innerHTML = r.hook;
     }
   } catch (error) {
-    console.error("AI 生成失败，使用默认文案", error);
+    console.error("AI 接口未配置或请求失败，使用默认文案", error);
     document.getElementById('res-hook').innerHTML = r.hook; 
   }
 
-  // 渲染页面信息
   document.getElementById('load-sec').style.display='none';
   document.getElementById('res-title').textContent = r.title;
   document.getElementById('res-fit').innerHTML = r.fit;
@@ -439,8 +428,6 @@ async function showResult(){
 
 function showContact(){
   document.getElementById('wechat-id').textContent=WECHAT_ID;
-  
-  // 提取学生的核心背景数据
   const stage = baseQs[0].opts[answers['q1']];
   const major = baseQs[1].opts[answers['q2']];
   const subMajor = answers['q8'] !== undefined ? q8Map[answers['q2']].opts[answers['q8']] : "通用方向";
@@ -448,7 +435,6 @@ function showContact(){
   const painPoint = q5AnswersArray.map(idx => baseQs[4].opts[idx]).join('、');
   const matchedDir = results[getDir()].title;
   
-  // 动态拼装破冰话术
   const autoText = `顾问你好，我刚做完AI测验：\n【学历】${stage}\n【专业】${major} - ${subMajor}\n【求职痛点】${painPoint}\n【匹配赛道】${matchedDir}\n希望能领取一份专属的选校/求职深度拆解！`;
   
   document.getElementById('auto-msg').value = autoText;
@@ -471,57 +457,37 @@ function copyAutoMsg(){
     prompt('请手动复制以下话术：', text);
   });
 }
-// 生成海报逻辑
-function generatePoster() 
-{
-  const targetElement = document.getElementById('poster-content'
-);
+
+function generatePoster() {
+  const targetElement = document.getElementById('poster-content');
+  const btn = document.querySelector('button[onclick="generatePoster()"]');
+  const originalText = btn.textContent;
+  btn.textContent = '正在生成卡片，请稍候...';
   
-  // 提示用户正在生成
-  const btn = document.querySelector('button[onclick="generatePoster()"]'
-);
-  const
- originalText = btn.textContent;
-  btn.textContent = 
-'正在生成卡片，请稍候...'
-;
-  
-  // 调用 html2canvas 截图
-  html2canvas(targetElement, { 
-scale: 2, useCORS: true }).then(canvas =>
- {
-    // 将画板转换为图片 URL (base64格式)
-    const imgData = canvas.toDataURL('image/png'
-);
-    
-    // 把图片塞进弹窗的 img 标签里
-    document.getElementById('generated-img'
-).src = imgData;
-    
-    // 恢复按钮文字并显示弹窗
+  html2canvas(targetElement, { scale: 2, useCORS: true }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    document.getElementById('generated-img').src = imgData;
     btn.textContent = originalText;
-    document.getElementById('poster-modal').classList.add('show'
-);
-  }).catch(
-err =>
- {
-    console.error("生成海报失败:"
-, err);
-    alert(
-"生成失败，请稍后再试或截图保存"
-);
+    document.getElementById('poster-modal').classList.add('show');
+  }).catch(err => {
+    console.error("生成海报失败:", err);
+    alert("生成失败，请稍后再试或直接截图保存");
     btn.textContent = originalText;
   });
 }
 
-function closePosterModal() 
-{
-  document.getElementById('poster-modal').classList.remove('show'
-);
+function closePosterModal() {
+  document.getElementById('poster-modal').classList.remove('show');
 }
 
+function restart(){
+  cur=0;answers={};selected=null;majorVal=null;curMultiSel=[];
+  document.getElementById('res-sec').style.display='none';
+  document.getElementById('quiz-sec').style.display='block';
+  buildQs();render();
+}
 
-  
+buildQs();render();
 </script>
 </body>
 </html>
