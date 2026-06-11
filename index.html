@@ -138,11 +138,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h3>添加顾问微信</h3>
-    <p>发送「测验结果」<br>顾问会结合你的方向做一对一分析</p>
+    <h3>添加顾问领取深度分析</h3>
+    <p>由于近期咨询量较大，请直接发送下方话术<br>顾问会优先为你进行一对一拆解</p>
+    
     <div class="wechat-id" id="wechat-id">YOUR_WECHAT_ID</div>
-    <div class="wechat-hint">长按复制微信号，搜索添加</div>
-    <button class="btn-copy" onclick="copyWechat()">复制微信号</button>
+    <div class="wechat-hint">👆 第一步：长按上方复制微信号，去微信搜索</div>
+    
+    <textarea id="auto-msg" readonly style="width:100%; height:110px; margin-bottom:12px; font-size:13px; line-height:1.6; padding:12px; border:1.5px dashed #a78bfa; border-radius:10px; color:#555; background:#fbf9ff; outline:none; resize:none;"></textarea>
+    
+    <button class="btn-copy" onclick="copyAutoMsg()">👇 第二步：一键复制咨询话术</button>
     <button class="btn-close" onclick="closeModal()">关闭</button>
   </div>
 </div>
@@ -424,21 +428,38 @@ async function showResult(){
 
 function showContact(){
   document.getElementById('wechat-id').textContent=WECHAT_ID;
+  
+  // 提取学生的核心背景数据
+  const stage = baseQs[0].opts[answers['q1']];
+  const major = baseQs[1].opts[answers['q2']];
+  const subMajor = answers['q8'] !== undefined ? q8Map[answers['q2']].opts[answers['q8']] : "通用方向";
+  const q5AnswersArray = answers['q5'] || [];
+  const painPoint = q5AnswersArray.map(idx => baseQs[4].opts[idx]).join('、');
+  const matchedDir = results[getDir()].title;
+  
+  // 动态拼装破冰话术
+  const autoText = `顾问你好，我刚做完AI测验：\n【学历】${stage}\n【专业】${major} - ${subMajor}\n【求职痛点】${painPoint}\n【匹配赛道】${matchedDir}\n希望能领取一份专属的选校/求职深度拆解！`;
+  
+  document.getElementById('auto-msg').value = autoText;
   document.getElementById('modal').classList.add('show');
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('show');}
 
-function copyWechat(){
-  navigator.clipboard.writeText(WECHAT_ID).then(()=>{
+function copyAutoMsg(){
+  const text = document.getElementById('auto-msg').value;
+  navigator.clipboard.writeText(text).then(()=>{
     const btn=document.querySelector('.btn-copy');
-    btn.textContent='✓ 已复制';
-    setTimeout(()=>{btn.textContent='复制微信号';},2000);
+    btn.textContent='✓ 话术已复制，快去微信粘贴吧';
+    btn.style.background='#10b981'; 
+    setTimeout(()=>{
+      btn.textContent='👇 第二步：一键复制咨询话术';
+      btn.style.background='#7c3aed';
+    }, 3000);
   }).catch(()=>{
-    prompt('请手动复制微信号：',WECHAT_ID);
+    prompt('请手动复制以下话术：', text);
   });
 }
-
 function restart(){
   cur=0;answers={};selected=null;majorVal=null;curMultiSel=[];
   document.getElementById('res-sec').style.display='none';
