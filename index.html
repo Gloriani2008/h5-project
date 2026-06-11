@@ -327,22 +327,60 @@ function getDir(){
   return 'manufacturing';
 }
 
-function showResult(){
-  document.getElementById('load-sec').style.display='none';
-  const r=results[getDir()];
-  
-  // 核心逻辑：判断Q1是不是选了第1项（本科在读或应届，索引为0）
+// 升级版 showResult，包含调用 LLM 的逻辑
+async function showResult(){
+  document.getElementById('quiz-sec').style.display='none';
+  // 显示加载动画，并修改提示词
+  document.getElementById('load-sec').style.display='block';
+  document.querySelector('.loading p').innerHTML = '正在深度分析您的选项...<br>资深AI顾问正在生成您的专属诊断...';
+
+  // 1. 获取基础匹配结果
+  const dirKey = getDir();
+  const r = results[dirKey];
   const isUndergrad = (answers['q1'] === 0);
 
-  document.getElementById('res-title').textContent=r.title;
-  document.getElementById('res-hook').textContent=r.hook;
-  document.getElementById('res-fit').innerHTML=r.fit;
+  // 2. 将数字答案翻译成文字，准备发给大模型
+  const userProfile = {
+    stage: baseQs[0].opts[answers['q1']],
+    major: baseQs[1].opts[answers['q2']],
+    employer: baseQs[2].opts[answers['q3']],
+    aiLevel: baseQs[3].opts[answers['q4']],
+    painPoint: baseQs[4].opts[answers['q5']],
+    goal: baseQs[5].opts[answers['q6']],
+    city: baseQs[6].opts[answers['q7']],
+    subMajor: answers['q8'] !== undefined ? q8Map[answers['q2']].opts[answers['q8']] : "通用方向",
+    matchedDirection: r.title
+  };
+
+  try {
+    // 3. 向我们刚才写的 Vercel API 发送请求
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userProfile })
+    });
+    
+    const data = await response.json();
+    
+    // 4. 将 AI 生成的专属点评插入到页面中 (替换原来的 hook 部分)
+    if(data.result) {
+      // 把 AI 生成的文本按段落转换成 HTML
+      const formattedAiText = data.result.split('\n').filter(p => p.trim() !== '').map(p => `<p style="margin-bottom:8px;">${p}</p>`).join('');
+      document.getElementById('res-hook').innerHTML = formattedAiText;
+    }
+  } catch (error) {
+    console.error("AI 生成失败，使用默认文案", error);
+    document.getElementById('res-hook').textContent = r.hook; // 降级处理，如果 API 失败就用预设的话术
+  }
+
+  // 5. 渲染页面其他部分（职位列表等）
+  document.getElementById('load-sec').style.display='none';
+  document.getElementById('res-title').textContent = r.title;
+  document.getElementById('res-fit').innerHTML = r.fit;
   
-  // 根据学历发放对应的岗位列表
   const jobList = isUndergrad ? r.jobs_ug : r.jobs_pg;
   document.getElementById('res-jobs').innerHTML=jobList.map(j=>`<div class="job-row"><div class="job-dot"></div><div class="job-name">${j.n}</div><div class="job-tag">${j.t}</div></div>`).join('');
   
-  // 如果是本科生，在底部总结处悄悄加一句专属破局提示
   let finalTeaser = r.teaser;
   if(isUndergrad) {
     finalTeaser = "<p style='color:#7c3aed; font-size:13px; margin-bottom:12px; padding:10px; background:#f5f0ff; border-radius:8px;'><b>💡 本科生直接就业提示：</b><br>核心算法岗普遍卡硕士学历，但你可以通过上述<b>应用型/运营类/测试类</b>的基础岗位直接切入赛道，先上车积累行业实战经验，避开学历内卷。</p>" + finalTeaser;
