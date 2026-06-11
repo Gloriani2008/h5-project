@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI职业方向测验 | 测测你的背景对应哪个缺口</title>
+<meta name="description" content="30秒测出你的AI+职业方向，找到竞争对手最少的赛道">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#f5f4f0}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif}
+.wrap{max-width:480px;margin:0 auto;padding:0 0 48px;background:#fff;min-height:100vh}
+.hero{background:linear-gradient(135deg,#0f0225 0%,#2d0a6e 55%,#5b21b6 100%);padding:32px 24px 36px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-60px;bottom:-60px;width:220px;height:220px;border-radius:50%;background:rgba(167,139,250,0.08)}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.9);font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:16px;letter-spacing:.05em}
+.hero h1{font-size:23px;font-weight:800;line-height:1.38;margin-bottom:10px}
+.hero h1 em{color:#c4b5fd;font-style:normal}
+.hero p{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:18px}
+.hero-stats{display:flex;gap:20px}
+.hero-stats span{font-size:12px;color:rgba(255,255,255,0.55)}
+.hero-stats b{color:rgba(255,255,255,0.9)}
+.quiz-body{padding:24px 20px 0}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.prog-bar{flex:1;height:3px;background:rgba(0,0,0,0.07);border-radius:2px}
+.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#7c3aed,#a78bfa);transition:width .35s ease}
+.prog-txt{font-size:12px;color:#888;white-space:nowrap;min-width:36px;text-align:right}
+.q-num{font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.q-text{font-size:18px;font-weight:700;color:#1a1a1a;line-height:1.45;margin-bottom:20px}
+.q-hint{font-size:12px;color:#666;margin-top:-14px;margin-bottom:16px;line-height:1.6;padding:8px 12px;background:#f8f7ff;border-radius:8px;border-left:2px solid #a78bfa}
+.opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid #e5e5e5;border-radius:12px;margin-bottom:9px;cursor:pointer;transition:all .15s;background:#fff}
+.opt:hover{border-color:#7c3aed;background:#fbf9ff}
+.opt.sel{border-color:#7c3aed;background:#f5f0ff}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid #d1d5db;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.opt.sel .dot{border-color:#7c3aed;background:#7c3aed}
+.opt.sel .dot::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+.opt-txt{font-size:15px;color:#1a1a1a;line-height:1.4}
+.btn-next{width:100%;padding:15px;background:#7c3aed;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;transition:opacity .15s;font-family:inherit}
+.btn-next:disabled{opacity:.28;cursor:default}
+.btn-next:not(:disabled):hover{opacity:.88}
+.loading{display:none;text-align:center;padding:80px 24px}
+.spinner{width:42px;height:42px;border:3px solid rgba(124,58,237,0.15);border-top-color:#7c3aed;border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:#666;font-size:14px;line-height:1.9}
+.result{display:none}
+.res-hero{background:linear-gradient(135deg,#0f0225,#2d0a6e 65%,#5b21b6);padding:28px 24px 32px;color:#fff}
+.res-lbl{font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.res-title{font-size:22px;font-weight:800;line-height:1.35;margin-bottom:14px}
+.res-hook{font-size:14px;color:rgba(255,255,255,0.78);line-height:1.8;padding:14px 16px;background:rgba(255,255,255,0.08);border-radius:10px;border-left:3px solid #a78bfa}
+.res-body{padding:22px 20px}
+.sec-lbl{font-size:11px;font-weight:700;color:#888;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+.fit-box{background:#f8f7ff;border-radius:12px;padding:16px;margin-bottom:22px}
+.fit-box p{font-size:14px;color:#1a1a1a;line-height:1.8}
+.fit-box p b{color:#7c3aed}
+.job-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0f0f0}
+.job-row:last-child{border-bottom:none}
+.job-dot{width:7px;height:7px;border-radius:50%;background:#7c3aed;flex-shrink:0}
+.job-name{font-size:14px;font-weight:600;color:#1a1a1a;flex:1}
+.job-tag{font-size:11px;color:#7c3aed;background:#f0ebff;padding:3px 8px;border-radius:6px;font-weight:600;white-space:nowrap}
+.teaser{margin-top:22px;padding:16px;border:1.5px dashed rgba(124,58,237,0.28);border-radius:12px;background:#fdfcff}
+.teaser p{font-size:13px;color:#555;line-height:1.85}
+.teaser p b{color:#1a1a1a}
+.cta-box{margin:22px 20px 0;background:linear-gradient(135deg,#0f0225,#3b0f6e 70%,#5b21b6);border-radius:16px;padding:24px;text-align:center}
+.cta-box h3{color:#fff;font-size:17px;font-weight:700;margin-bottom:8px;line-height:1.45}
+.cta-box p{color:rgba(255,255,255,0.65);font-size:13px;line-height:1.75;margin-bottom:20px}
+.btn-cta{width:100%;padding:15px;background:#fff;color:#7c3aed;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
+.btn-cta:hover{opacity:.92}
+.btn-restart{display:block;margin:14px auto 0;background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:inherit}
+
+/* 联系弹窗 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center}
+.modal h3{font-size:18px;font-weight:800;color:#1a1a1a;margin-bottom:8px}
+.modal p{font-size:14px;color:#666;line-height:1.7;margin-bottom:20px}
+.wechat-id{font-size:20px;font-weight:800;color:#7c3aed;background:#f5f0ff;padding:12px 20px;border-radius:10px;margin-bottom:8px;letter-spacing:.05em}
+.wechat-hint{font-size:12px;color:#999;margin-bottom:20px}
+.btn-copy{width:100%;padding:13px;background:#7c3aed;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px}
+.btn-close{background:none;border:none;font-size:14px;color:#999;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <div class="hero-tag">🎯 AI职业方向测验</div>
+  <h1>你的专业<br>在AI时代有个<em>没人发现的缺口</em></h1>
+  <p>不是教你怎么找工作，而是告诉你一个你大概率不知道的赛道——你的背景在那里竞争对手极少。</p>
+  <div class="hero-stats">
+    <span>⏱ <b>约3分钟</b></span>
+    <span>📊 <b>9道</b>选择题</span>
+    <span>🎁 <b>8个</b>方向精准匹配</span>
+  </div>
+</div>
+
+<div class="quiz-body" id="quiz-sec">
+  <div class="prog-row">
+    <div class="prog-bar"><div class="prog-fill" id="prog" style="width:11%"></div></div>
+    <div class="prog-txt" id="prog-txt">1 / 9</div>
+  </div>
+  <div class="q-num" id="q-num">问题 1</div>
+  <div class="q-text" id="q-text"></div>
+  <div class="q-hint" id="q-hint" style="display:none"></div>
+  <div id="opts-wrap"></div>
+  <button class="btn-next" id="btn-next" disabled onclick="nextQ()">下一题 →</button>
+</div>
+
+<div class="loading" id="load-sec">
+  <div class="spinner"></div>
+  <p>正在根据你的背景<br>匹配最适合的方向...</p>
+</div>
+
+<div class="result" id="res-sec">
+  <div class="res-hero">
+    <div class="res-lbl">你的匹配方向</div>
+    <div class="res-title" id="res-title"></div>
+    <div class="res-hook" id="res-hook"></div>
+  </div>
+  <div class="res-body">
+    <div class="sec-lbl">为什么你适合这个方向</div>
+    <div class="fit-box"><p id="res-fit"></p></div>
+    <div class="sec-lbl">代表性岗位</div>
+    <div id="res-jobs"></div>
+    <div class="teaser"><p id="res-teaser"></p></div>
+  </div>
+  <div class="cta-box">
+    <h3>测验只是起点<br>你的具体情况需要一对一来分析</h3>
+    <p>哪家企业缺口最真实<br>你的背景如何包装才能命中JD<br>顾问可以帮你具体到每一步</p>
+    <button class="btn-cta" onclick="showContact()">🔓 免费领取完整分析</button>
+    <button class="btn-restart" onclick="restart()">重新测验</button>
+  </div>
+</div>
+
+</div>
+
+<!-- 联系弹窗 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>添加顾问微信</h3>
+    <p>发送「测验结果」<br>顾问会结合你的方向做一对一分析</p>
+    <!-- ⬇️ 把下面的微信号替换成你们真实的顾问微信号 -->
+    <div class="wechat-id" id="wechat-id">YOUR_WECHAT_ID</div>
+    <div class="wechat-hint">长按复制微信号，搜索添加</div>
+    <button class="btn-copy" onclick="copyWechat()">复制微信号</button>
+    <button class="btn-close" onclick="closeModal()">关闭</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ⚙️  配置区域 — 只需修改这里
+// ============================================================
+const WECHAT_ID = 'luoluo_ni2005'; // ← 替换为顾问微信号
+// ============================================================
+
+const baseQs=[
+  {id:'q1',q:"你现在是什么阶段？",opts:["本科在读或应届","硕士在读或应届（国内）","海外留学硕士/博士","已工作，想换方向"]},
+  {id:'q2',q:"你的专业大类是？",hint:"这是最关键的一题，影响后续所有匹配",opts:["理工类（机械/电气/自动化/土木/材料/化工/环境）","商科/经管类（金融/经济/会计/管理）","医学/生命科学（临床/影像/药学/生物）","法律/社会科学/文科"]},
+  {id:'q3',q:"你更倾向哪类雇主？",opts:["央国企/国有单位","头部民企/互联网大厂","外资企业","新能源/硬科技企业","还没想好"]},
+  {id:'q4',q:"你目前用过哪些AI工具？",opts:["几乎没用过","用过ChatGPT、文心一言等","会写基础Python代码","有机器学习或建模经验"]},
+  {id:'q5',q:"求职时你最大的困惑？",opts:["不知道往哪个方向走","知道方向但不知道怎么准备","简历投了没有回音","面试通过率低","担心专业不对口"]},
+  {id:'q6',q:"你最看重哪个？",opts:["薪资水平","工作稳定性","行业长期前景","尽快拿到offer"]},
+  {id:'q7',q:"你的目标城市？",opts:["北京/上海","广州/深圳","其他省会城市","不限地点"]}
+];
+const q8Map={
+  0:{id:'q8',q:"你的理工专业更细分在哪里？",opts:["机械/自动化/电气","土木/工程管理/造价","能源/新能源/环境工程","计算机/数学/统计"]},
+  1:{id:'q8',q:"你的数学和数据基础怎么样？",hint:"帮助区分你更适合量化方向还是风控方向",opts:["没有数学/编程基础","学过统计，不会编程","会Python/R等基础编程","有量化建模或机器学习经验"]},
+  2:{id:'q8',q:"你的医学背景更偏向哪个？",opts:["临床医学/影像/检验","药学/化学/生物工程","生命科学/生物信息","医学工程/卫生管理"]}
+};
+const q9={id:'q9',q:"你更倾向哪种工作场景？",opts:["数据分析和建模（处理数据和模型）","合规、法律和风险管理（处理规则文件）","临床、医疗或实验室场景","工厂、工地或技术现场"]};
+
+const results={
+  finance_risk:{title:"AI + 金融风控 / 合规",hook:"银行和券商有个坑填了好几年：他们要找一个人，既懂监管合规逻辑，又能用AI模型做风险预测。懂合规的不会建模，会建模的不懂监管——这个坑，到现在还在。",fit:"你的<b>商科/法律背景</b>是这个方向最稀缺的资产。市场上多数人只有两样里的一样。你已经有行业那一半了，这是四年读出来的，AI建模应用是可以补上的。",jobs:[{n:"AI风控建模分析师",t:"银行/券商"},{n:"智能合规专员",t:"监管科技方向"},{n:"信用模型工程师",t:"金融机构通用"}],teaser:"<b>但银行风控、券商合规、消费金融——三个细分方向对背景要求差异很大。</b>你的专业如何包装才能命中这类岗位的JD关键词，需要顾问结合你的具体情况来判断。"},
+  quant:{title:"AI + 金融量化 / 智能投研",hook:"量化赛道的薪资天花板是金融行业里最高的——但它需要你同时懂数学建模和金融逻辑。纯数学的人不懂金融场景，纯金融的人不会建模，这个组合市场上真的很少。",fit:"你的背景里有<b>数学/统计/数据分析的底子</b>，这是量化方向最难补的部分。金融场景的理解是可以在实战中快速学的，但数学直觉不是三个月能培养的。你已经有核心优势了。",jobs:[{n:"量化研究助理",t:"私募/公募基金"},{n:"AI策略分析师",t:"券商自营部门"},{n:"智能投研工程师",t:"金融科技企业"}],teaser:"<b>但量化方向门槛高，入口很窄——你的数学基础和编程能力是否真的够用？</b>哪家机构的量化校招对你最可及，需要顾问帮你做一次真实评估，而不是凭感觉投。"},
+  manufacturing:{title:"AI + 智能制造 / 工业视觉",hook:"制造业正在把传统工程师岗位升级成AI系统操作岗。同样的企业，同样的工作地点，但会AI应用的工程师和不会的，薪资差了30-50%。这个差距，大多数工科学生不知道。",fit:"你的<b>理工科工程背景</b>是纯AI毕业生永远没有的。他们会建模，但不懂生产工艺流程；你懂工艺，加上AI工具应用，就是制造企业最想要、一直找不到的组合。这不是转行，是升维。",jobs:[{n:"AI视觉系统工程师",t:"头部制造企业"},{n:"工业AI应用工程师",t:"智能工厂方向"},{n:"机器人应用工程师",t:"自动化设备企业"}],teaser:"<b>但机械、自动化、电气——不同专业对应的目标企业和岗位差异不小。</b>哪家制造企业现在缺口最真实、招聘门槛最匹配你的背景，需要顾问帮你对上号。"},
+  engineering:{title:"AI + 工程造价 / 智能建造",hook:"建筑业是中国体量最大的传统行业之一，BIM加AI的数字化改造刚刚开始。传统造价师和工程师完全不具备AI能力，央国企建筑单位在招这类人，但市场上几乎找不到。",fit:"你的<b>土木/工程管理/造价背景</b>是进入这个方向的门票——这类岗位本质上还是工程岗，只是需要你多一层AI工具应用能力。行业知识才是护城河，AI应用是可以补的。",jobs:[{n:"AI造价分析师",t:"建筑/地产央国企"},{n:"BIM+AI应用工程师",t:"智能建造方向"},{n:"工程数字化专员",t:"大型建设单位"}],teaser:"<b>但央国企建筑单位和民营地产企业，招聘逻辑和薪资结构差很多。</b>你的背景更适合哪条线，如何在简历里体现出AI应用能力，需要顾问帮你做针对性的包装。"},
+  energy:{title:"AI + 新能源 / 储能",hook:"光伏、储能、风电是少数有国家政策兜底的行业——这不是市场自然增长，是强制推进的增长，确定性很高。但懂电力系统运作、又能用AI做预测优化的工程师，央国企和新能源民企抢了很久，还没抢够。",fit:"你的<b>电气/能源/工程背景</b>在这个方向是天然护城河。新能源企业最头疼的不是找不到AI工程师，而是AI工程师不懂行业。你已经有行业那一半，窗口期内AI应用是可以补上的。",jobs:[{n:"储能AI系统工程师",t:"宁德/比亚迪能源"},{n:"光伏智能运维工程师",t:"央国企新能源"},{n:"新能源AI数据分析师",t:"新能源企业通用"}],teaser:"<b>但光伏、储能、风电、电网——四个方向的招聘节奏和企业类型完全不同。</b>你的专业背景从哪个入口切进去成功率最高，需要顾问结合你的具体情况来分析。"},
+  medical:{title:"AI + 医疗影像 / 医学AI",hook:"医学背景有一道AI工程师跨不过去的门：临床逻辑和医学诊断思维，是学计算机的人学不来的。联影医疗、推想科技这类企业见到一个既懂临床、又能理解AI诊断系统的候选人，基本上见一个要一个。",fit:"你的<b>医学/影像背景</b>在这个方向是最高的护城河。AI工程师可以学模型，但学不来你的临床语言。这意味着你站在一个纯技术背景的人进不来的赛道里，竞争对手天然就少。",jobs:[{n:"医疗AI产品专员",t:"医疗器械企业"},{n:"医学影像AI工程师",t:"联影/推想等企业"},{n:"临床AI解决方案专员",t:"互联网医疗企业"}],teaser:"<b>但医疗器械、互联网医疗、医院信息科——三个方向的入口差异很大。</b>你的学历背景和临床经验，更适合从哪个口子切入，需要顾问帮你做一次真实的方向评估。"},
+  pharma:{title:"AI + 医药研发 / 生物信息",hook:"药企和CRO公司的AI化刚刚开始，但速度在加快——AI辅助药物筛选、基因数据分析、临床试验数据处理，这些岗位需要你同时懂实验逻辑和数据工具。两样都有的人，市场上极少。",fit:"你的<b>药学/生物/化学背景</b>是进入这个赛道最难复制的部分。AI工程师可以学数据工具，但学不来你对实验流程和生物机制的理解。这个组合，正是药企AI团队最想要的。",jobs:[{n:"AI药物研发专员",t:"大型药企/Biotech"},{n:"生物信息分析工程师",t:"CRO/基因公司"},{n:"临床数据AI分析师",t:"医药研究机构"}],teaser:"<b>但药企、CRO、基因公司——不同机构对背景要求差异很大。</b>你的具体专业方向对应哪类机构的岗位，如何在简历上体现AI应用能力，需要顾问结合你的情况来判断。"},
+  legal:{title:"AI + 法律合规 / 法律科技",hook:"律所的AI转型比你想象的快得多——能用AI工具处理合同审查、法条检索、合规分析的法律人才，招聘需求在过去一年里激增了200%。但法律加AI的组合，市场上几乎找不到人。",fit:"你的<b>法律/社科背景</b>是这个方向最难替代的资产。AI可以做检索，但判断法律风险、理解合规边界需要你的专业训练。你已经有了别人没有的东西，加上AI工具应用，就是法律科技赛道最需要的人。",jobs:[{n:"AI合规专员",t:"金融/科技/咨询企业"},{n:"法律科技产品专员",t:"法律AI公司"},{n:"智能合同审查专员",t:"律所/法务部门"}],teaser:"<b>但律所、企业法务、法律AI公司——三个方向的薪资和发展路径差异非常大。</b>你的法律背景和AI能力如何组合包装，哪个入口对你现阶段最可及，需要顾问帮你做一对一分析。"}
+};
+
+let allQs=[],cur=0,answers={},selected=null,majorVal=null;
+
+function buildQs(){
+  allQs=[...baseQs];
+  if(majorVal!==null&&majorVal!==3&&q8Map[majorVal]){allQs.push(q8Map[majorVal]);}
+  allQs.push(q9);
+}
+
+function render(){
+  const q=allQs[cur],total=allQs.length;
+  document.getElementById('prog').style.width=`${((cur+1)/total)*100}%`;
+  document.getElementById('prog-txt').textContent=`${cur+1} / ${total}`;
+  document.getElementById('q-num').textContent=`问题 ${cur+1}`;
+  document.getElementById('q-text').textContent=q.q;
+  const hint=document.getElementById('q-hint');
+  if(q.hint){hint.textContent=q.hint;hint.style.display='block';}
+  else{hint.style.display='none';}
+  const wrap=document.getElementById('opts-wrap');
+  wrap.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const d=document.createElement('div');
+    d.className='opt';
+    d.innerHTML=`<div class="dot"></div><div class="opt-txt">${o}</div>`;
+    d.onclick=()=>sel(i,d);
+    wrap.appendChild(d);
+  });
+  document.getElementById('btn-next').disabled=true;
+  selected=null;
+  document.getElementById('btn-next').textContent=cur===allQs.length-1?'查看我的方向 →':'下一题 →';
+}
+
+function sel(i,el){
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');selected=i;
+  document.getElementById('btn-next').disabled=false;
+}
+
+function nextQ(){
+  if(selected===null)return;
+  const q=allQs[cur];
+  answers[q.id]=selected;
+  if(q.id==='q2'){majorVal=selected;buildQs();}
+  if(cur<allQs.length-1){cur++;render();}
+  else showLoad();
+}
+
+function showLoad(){
+  document.getElementById('quiz-sec').style.display='none';
+  document.getElementById('load-sec').style.display='block';
+  setTimeout(showResult,2200);
+}
+
+function getDir(){
+  const major=answers['q2'],employer=answers['q3'],q8=answers['q8'],q9v=answers['q9'];
+  if(major===3)return'legal';
+  if(major===2){if(q8===1||q8===2)return'pharma';return'medical';}
+  if(major===1){if(q8>=2||q9v===0)return'quant';return'finance_risk';}
+  if(major===0){
+    if(q8===1)return'engineering';
+    if(q8===2)return'energy';
+    if(q8===3)return'quant';
+    if(q8===0){if(employer===0||employer===3)return'energy';return'manufacturing';}
+    return'manufacturing';
+  }
+  return'manufacturing';
+}
+
+function showResult(){
+  document.getElementById('load-sec').style.display='none';
+  const r=results[getDir()];
+  document.getElementById('res-title').textContent=r.title;
+  document.getElementById('res-hook').textContent=r.hook;
+  document.getElementById('res-fit').innerHTML=r.fit;
+  document.getElementById('res-jobs').innerHTML=r.jobs.map(j=>`<div class="job-row"><div class="job-dot"></div><div class="job-name">${j.n}</div><div class="job-tag">${j.t}</div></div>`).join('');
+  document.getElementById('res-teaser').innerHTML=r.teaser;
+  document.getElementById('res-sec').style.display='block';
+}
+
+function showContact(){
+  document.getElementById('wechat-id').textContent=WECHAT_ID;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('show');}
+
+function copyWechat(){
+  navigator.clipboard.writeText(WECHAT_ID).then(()=>{
+    const btn=document.querySelector('.btn-copy');
+    btn.textContent='✓ 已复制';
+    setTimeout(()=>{btn.textContent='复制微信号';},2000);
+  }).catch(()=>{
+    prompt('请手动复制微信号：',WECHAT_ID);
+  });
+}
+
+function restart(){
+  cur=0;answers={};selected=null;majorVal=null;allQs=[];
+  document.getElementById('res-sec').style.display='none';
+  document.getElementById('quiz-sec').style.display='block';
+  buildQs();render();
+}
+
+buildQs();render();
+</script>
+</body>
+</html>
